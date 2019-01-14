@@ -1,0 +1,4 @@
+services:
+    Xigen\Bundle\EntityFilterBundle\Service:
+        public: true
+        resource: '../../Service/*'

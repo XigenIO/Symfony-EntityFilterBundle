@@ -1,0 +1,19 @@
+{
+    "name" : "xigen.io/entity-filter-bundle",
+    "description" : "",
+    "type" : "symfony-bundle",
+    "authors" : [{
+        "name" : "Chris Hilsdon",
+        "email" : "chrish@xigen.co.uk",
+        "homepage": "https://xigen.co.uk"
+    }],
+    "require" : {
+        "php": "^7.3",
+        "symfony/framework-bundle": "~4"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "Xigen\\Bundle\\EntityFilterBundle\\" : ""
+        }
+    }
+}
