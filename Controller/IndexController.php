@@ -2,7 +2,8 @@
 
 namespace Xigen\Bundle\EntityFilterBundle\Controller;
 
-use Xigen\Bundle\EntityFilterBundle\Service\EntityFilter;
+use App\Service\EntityFilterService;
+#use Xigen\Bundle\EntityFilterBundle\Service\EntityFilterService;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -13,17 +14,28 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class IndexController extends Controller
 {
-
-    public function __construct(EntityFilter $entityFilter)
+    public function __construct(\App\Service\EntityFilterService $entityFilter)
     {
         $this->entityFilter = $entityFilter;
     }
 
     /**
-     * @Route("/entity-filter/{entity}", name="entityFilter_index")
+     * @Route("/entity-filter/{entity}", name="index_test")
      */
-    public function index(string $entity)
+    public function index($entity)
     {
-        $this->entityFilter->getEntityAttributes($entity);
+        $attributes = $this->entityFilter->getEntityAttributes($entity);
+
+        return $this->json($attributes);
+    }
+
+    /**
+     * @Route("/entity-filter/{entity}/{attribute}", name="index_attribute")
+     */
+    public function attribute($entity, $attribute)
+    {
+        $values = $this->entityFilter->getAttributeValues($entity, $attribute);
+
+        return $this->json($values);
     }
 }
