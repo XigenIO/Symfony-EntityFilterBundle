@@ -1,9 +1,8 @@
 <?php
 
-namespace Xigen\Bundle\EntityFilterBundle\Controller;
+namespace Xigen\Bundle\VueBundle\Controller;
 
-use App\Service\EntityFilterService;
-#use Xigen\Bundle\EntityFilterBundle\Service\EntityFilterService;
+use Xigen\Bundle\VueBundle\Service\EntityFilter;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -12,15 +11,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class IndexController extends Controller
+class EntityFilterController extends Controller
 {
-    public function __construct(\App\Service\EntityFilterService $entityFilter)
+    public function __construct(EntityFilter $entityFilter)
     {
         $this->entityFilter = $entityFilter;
     }
 
     /**
-     * @Route("/entity-filter/{entity}", name="index_test")
+     * @Route("/entity-filter/{entity}", name="EntityFilter_index")
      */
     public function index($entity)
     {
@@ -30,7 +29,7 @@ class IndexController extends Controller
     }
 
     /**
-     * @Route("/entity-filter/{entity}/{attribute}", name="index_attribute")
+     * @Route("/entity-filter/{entity}/{attribute}", name="EntityFilter_attribute")
      */
     public function attribute($entity, $attribute)
     {

@@ -4,7 +4,7 @@ namespace Xigen\Bundle\VueBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, Query};
 
-class EntityFilter
+class EntityTable
 {
     /**
      * @var \Doctrine\ORM\EntityManagerInterface
@@ -16,7 +16,7 @@ class EntityFilter
         $this->em = $em;
     }
 
-    public function getEntityAttributes($entity): ?array
+    public function getEntites($entity): ?array
     {
         if (false === $this->entityExists($entity)) {
             return null;
@@ -25,34 +25,10 @@ class EntityFilter
         $query = $this->getRepository($entity)
             ->createQueryBuilder('e')
             ->select("e")
-            ->setMaxResults(1)
             ->getQuery()
         ;
 
-        $attributes = [];
-        foreach ($query->getArrayResult()[0] as $key => $value) {
-            $attributes[] = $key;
-        }
-
-        return array_values($attributes);
-    }
-
-    public function getAttributeValues($entity, $attribute)
-    {
-        $repo = $this->getRepository($entity);
-
-        $query = $repo->createQueryBuilder('e')
-            ->select("e.id, e.{$attribute}")
-            ->where("e.{$attribute} != ''")
-            ->getQuery()
-        ;
-
-        $values = [''];
-        foreach ($query->getScalarResult() as $row) {
-            $values[$row['id']] = $row[$attribute];
-        }
-
-        return array_unique($values, SORT_STRING);
+        return array_values($query->getArrayResult());
     }
 
     private function entityExists($name): bool

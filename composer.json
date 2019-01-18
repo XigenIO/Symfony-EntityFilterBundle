@@ -1,5 +1,5 @@
 {
-    "name" : "xigen.io/entity-filter-bundle",
+    "name" : "xigen.io/vue-bundle",
     "description" : "",
     "type" : "symfony-bundle",
     "authors" : [{
@@ -13,7 +13,7 @@
     },
     "autoload" : {
         "psr-4" : {
-            "Xigen\\Bundle\\EntityFilterBundle\\" : ""
+            "Xigen\\Bundle\\VueBundle\\" : ""
         }
     }
 }

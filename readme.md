@@ -1,7 +1,7 @@
-# Symfony-EntityFilterBundle
+# Symfony-VueBundle
 
 
 ## Installation
 ```sh
-composer require xigen.io/entity-filter-bundle
+composer require xigen.io/vue-bundle
 ```

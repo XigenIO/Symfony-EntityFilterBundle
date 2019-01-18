@@ -1,4 +1,7 @@
 services:
-    Xigen\Bundle\EntityFilterBundle\Service:
+    Xigen\Bundle\VueBundle\Service\:
         public: true
         resource: '../../Service/*'
+    Xigen\Bundle\VueBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']

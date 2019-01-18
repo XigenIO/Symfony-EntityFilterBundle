@@ -1,6 +1,6 @@
 <?php
 
-namespace Xigen\Bundle\EntityFilterBundle\DependencyInjection;
+namespace Xigen\Bundle\VueBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
