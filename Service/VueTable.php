@@ -4,7 +4,7 @@ namespace Xigen\Bundle\VueBundle\Service;
 
 use Doctrine\ORM\{EntityManagerInterface, Query};
 
-class EntityFilter
+class VueTable
 {
     /**
      * @var \Doctrine\ORM\EntityManagerInterface
@@ -14,6 +14,21 @@ class EntityFilter
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
+    }
+
+    public function getEntites($entity): ?array
+    {
+        if (false === $this->entityExists($entity)) {
+            return null;
+        }
+
+        $query = $this->getRepository($entity)
+            ->createQueryBuilder('e')
+            ->select("e")
+            ->getQuery()
+        ;
+
+        return array_values($query->getArrayResult());
     }
 
     public function getEntityAttributes($entity): ?array
@@ -47,13 +62,17 @@ class EntityFilter
             ->getQuery()
         ;
 
-        $values = [''];
+        $values = [];
         foreach ($query->getScalarResult() as $row) {
             $values[$row['id']] = $row[$attribute];
         }
 
-        return array_unique($values, SORT_STRING);
+        $values = array_unique($values, SORT_STRING);
+        sort($values, SORT_STRING);
+
+        return $values;
     }
+
 
     private function entityExists($name): bool
     {
