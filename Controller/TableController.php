@@ -24,23 +24,16 @@ class TableController extends Controller
     }
 
     /**
-     * @Route("/table/{entity}", name="VueTable_index")
+     * @Route("/table/{entity}/{attributes}", name="VueTable_index")
      */
-    public function table($entity)
+    public function table($entity, $attributes)
     {
-        $entites = $this->table->getEntites($entity);
+        $attributes = explode('-', $attributes);
+        $entites = $this->table->setEntity($entity)
+            ->getEntites($attributes)
+        ;
 
         return $this->json($entites);
-    }
-
-    /**
-     * @Route("/table/filter/{entity}", name="VueTable_filter")
-     */
-    public function filter($entity)
-    {
-        $attributes = $this->table->getEntityAttributes($entity);
-
-        return $this->json($attributes);
     }
 
     /**
@@ -48,7 +41,9 @@ class TableController extends Controller
      */
     public function filterByAttribute($entity, $attribute)
     {
-        $values = $this->table->getAttributeValues($entity, $attribute);
+        $values = $this->table->setEntity($entity)
+            ->getAttributeValues($attribute)
+        ;
 
         return $this->json($values);
     }

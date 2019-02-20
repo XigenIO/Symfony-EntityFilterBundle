@@ -2,7 +2,7 @@
 
 namespace Xigen\Bundle\VueBundle\Service;
 
-use Doctrine\ORM\{EntityManagerInterface, Query};
+use Doctrine\ORM\{EntityManagerInterface, Query, Query\QueryException};
 
 class VueTable
 {
@@ -11,60 +11,86 @@ class VueTable
      */
     protected $em;
 
+    private $entity;
+
+    private $entityClass;
+
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
     }
 
-    public function getEntites($entity): ?array
+    public function setEntity($entity)
     {
-        if (false === $this->entityExists($entity)) {
+        $this->entity = $entity;
+        $this->entityClass = "App\\Entity\\{$entity}";
+
+        return $this;
+    }
+
+    public function getEntites($attributes): ?array
+    {
+        if (false === $this->entityExists()) {
             return null;
         }
 
-        $query = $this->getRepository($entity)
-            ->createQueryBuilder('e')
-            ->select("e")
-            ->getQuery()
-        ;
+        $entites = [];
+        foreach ($this->getRepository()->findAll() as $entity) {
+            $data = [];
+            foreach ($attributes as $key) {
+                $get = 'get' .  strtoupper($key);
+                $value = $entity->$get();
+                if ($value instanceof \DateTime) {
+                    $value = $value->format('Y-m-d H:i');
+                }
+                $data[$key] = $value . '';
+            }
+            $entites[] = $data;
+        }
 
-        return array_values($query->getArrayResult());
+        return $entites;
     }
 
-    public function getEntityAttributes($entity): ?array
+    public function getEntityAttributes(): ?array
     {
-        if (false === $this->entityExists($entity)) {
+        if (false === $this->entityExists()) {
             return null;
         }
 
-        $query = $this->getRepository($entity)
-            ->createQueryBuilder('e')
-            ->select("e")
-            ->setMaxResults(1)
-            ->getQuery()
-        ;
-
-        $attributes = [];
-        foreach ($query->getArrayResult()[0] as $key => $value) {
-            $attributes[] = $key;
+        $props = [];
+        $reflection = new \ReflectionClass($this->entityClass);
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PRIVATE) as $prop) {
+            $props[] = $prop->getName();
         }
 
-        return array_values($attributes);
+        return $props;
     }
 
-    public function getAttributeValues($entity, $attribute)
+    public function getAttributeValues($attribute)
     {
-        $repo = $this->getRepository($entity);
-
-        $query = $repo->createQueryBuilder('e')
-            ->select("e.id, e.{$attribute}")
-            ->where("e.{$attribute} != ''")
-            ->getQuery()
-        ;
-
         $values = [];
-        foreach ($query->getScalarResult() as $row) {
-            $values[$row['id']] = $row[$attribute];
+        $repo = $this->getRepository();
+
+        try {
+            $query = $repo->createQueryBuilder('e')
+                ->select("e.{$attribute}")
+                ->where("e.{$attribute} != ''")
+                ->getQuery()
+            ;
+
+            foreach ($query->getScalarResult() as $row) {
+                $values[] = $row[$attribute];
+            }
+        } catch (QueryException $e) {
+            foreach ($repo->findAll() as $row) {
+                $get = 'get' .  strtoupper($attribute);
+                $value = $row->$get();
+                if ($value instanceof \DateTime) {
+                    $value = $value->format('Y-m-d H:i');
+                }
+
+                $values[] = $value;
+            }
         }
 
         $values = array_unique($values, SORT_STRING);
@@ -74,25 +100,25 @@ class VueTable
     }
 
 
-    private function entityExists($name): bool
+    private function entityExists(): bool
     {
-        return class_exists("App\\Entity\\{$name}");
+        return class_exists($this->getEntityClass());
     }
 
-    private function getEntityClass($name)
+    private function getEntityClass()
     {
-        return "App\\Entity\\{$name}";
+        return $this->entityClass;
     }
 
-    private function getEntity($name)
+    private function getEntity()
     {
-        $class = $this->getEntityClass($name);
+        $class = $this->getEntityClass();
 
         return new $class;
     }
 
-    private function getRepository($name)
+    private function getRepository()
     {
-        return $this->em->getRepository($this->getEntityClass($name));
+        return $this->em->getRepository($this->getEntityClass());
     }
 }
