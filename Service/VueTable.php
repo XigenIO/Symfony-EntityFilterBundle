@@ -2,10 +2,14 @@
 
 namespace Xigen\Bundle\VueBundle\Service;
 
+use Xigen\Bundle\VueBundle\VueEntityInterface;
+
 use Doctrine\ORM\{EntityManagerInterface, Query, Query\QueryException};
 
 class VueTable
 {
+    const TIME_FORMAT = 'Y-m-d H:i:s';
+
     /**
      * @var \Doctrine\ORM\EntityManagerInterface
      */
@@ -35,16 +39,25 @@ class VueTable
         }
 
         $entites = [];
-        foreach ($this->getRepository()->findAll() as $entity) {
+        $repo = $this->getRepository();
+        foreach ($repo->findAll() as $entity) {
             $data = [];
             foreach ($attributes as $key) {
                 $get = 'get' .  strtoupper($key);
                 $value = $entity->$get();
                 if ($value instanceof \DateTime) {
-                    $value = $value->format('Y-m-d H:i');
+                    $value = $value->format(self::TIME_FORMAT);
                 }
+                $data['id'] = $entity->getId();
                 $data[$key] = $value . '';
             }
+            $html = '';
+
+
+            if (method_exists($repo, 'getVueHtml')) {
+                $html = $repo->getVueHtml($entity);
+            }
+            $data['_html_'] = $html;
             $entites[] = $data;
         }
 
@@ -83,10 +96,15 @@ class VueTable
             }
         } catch (QueryException $e) {
             foreach ($repo->findAll() as $row) {
-                $get = 'get' .  strtoupper($attribute);
+                $get = 'get' .  ucfirst($attribute);
                 $value = $row->$get();
+
+                if ($value instanceof VueEntityInterface) {
+                    $value = $value->__toVue();
+                }
+
                 if ($value instanceof \DateTime) {
-                    $value = $value->format('Y-m-d H:i');
+                    $value = $value->format(self::TIME_FORMAT);
                 }
 
                 $values[] = $value;
