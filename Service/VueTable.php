@@ -27,7 +27,12 @@ class VueTable
     public function setEntity($entity)
     {
         $this->entity = $entity;
-        $this->entityClass = "App\\Entity\\{$entity}";
+        $this->entityClass = "AppBundle\\Entity\\{$entity}";
+
+        // Added backwords compatibility with old Symfony namespacing
+        if (\Symfony\Component\HttpKernel\Kernel::MAJOR_VERSION < 4) {
+            $this->entityClass = "App\\Entity\\{$entity}";
+        }
 
         return $this;
     }
