@@ -50,6 +50,14 @@ class VueTable
             foreach ($attributes as $key) {
                 $get = 'get' .  strtoupper($key);
                 $value = $entity->$get();
+                if ($entity instanceof VueEntityInterface) {
+                    $propVal = $entity->__vueProperty($key);
+
+                    if($propVal !== null) {
+                        $value = $propVal;
+                    }
+                }
+
                 if ($value instanceof \DateTime) {
                     $value = $value->format(self::TIME_FORMAT);
                 }
@@ -89,6 +97,9 @@ class VueTable
         $values = [];
         $repo = $this->getRepository();
 
+        $entity = $this->getEntity();
+        $vueRenderCompat = $entity instanceof VueEntityInterface;
+
         try {
             $query = $repo->createQueryBuilder('e')
                 ->select("e.{$attribute}")
@@ -97,8 +108,19 @@ class VueTable
             ;
 
             foreach ($query->getScalarResult() as $row) {
-                $values[] = $row[$attribute];
+                $value = $row[$attribute];
+
+                if ($vueRenderCompat) {
+                    $propVal = $entity->__vueProperty($attribute, $value);
+
+                    if($propVal !== null) {
+                        $value = $propVal;
+                    }
+                }
+
+                $values[$value] = $value;
             }
+
         } catch (QueryException $e) {
             foreach ($repo->findAll() as $row) {
                 $get = 'get' .  ucfirst($attribute);
@@ -110,6 +132,14 @@ class VueTable
 
                 if ($value instanceof \DateTime) {
                     $value = $value->format(self::TIME_FORMAT);
+                }
+
+                if ($vueRenderCompat) {
+                    $propVal = $entity->__vueProperty($attribute, $value);
+
+                    if($propVal !== null) {
+                        $value = $propVal;
+                    }
                 }
 
                 $values[] = $value;
