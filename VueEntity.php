@@ -3,10 +3,22 @@
 namespace Xigen\Bundle\VueBundle;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\Cache\Simple\FilesystemCache;
 use Xigen\Bundle\VueBundle\Annotations\VueRenderProperty;
 
 abstract class VueEntity implements VueEntityInterface
 {
+    private $cache = false;
+
+    private function getCache()
+    {
+        if(!$this->cache) {
+            $this->cache = new FilesystemCache();
+        }
+
+        return $this->cache;
+    }
+
     public function __toVue()
     {
         return $this->__toString();
@@ -24,12 +36,24 @@ abstract class VueEntity implements VueEntityInterface
         }
     }
 
-    private function getAnnotation($property, $class) {
+    private function getAnnotation($property, $class)
+    {
+        $cacheKey = str_replace('\\', '_', get_class($this) . '.' . $class . '__' . $property);
+        $cache = $this->getCache();
+
+        if ($cache->has($cacheKey)) {
+            return $cache->get($cacheKey);
+        }
+
         try {
             $reader = new AnnotationReader();
             $reflProperty = new \ReflectionProperty(get_class($this), $property);
 
-            return $reader->getPropertyAnnotation($reflProperty, $class);
+            $annotation = $reader->getPropertyAnnotation($reflProperty, $class);
+
+            $cache->set($cacheKey, $annotation);
+
+            return $annotation;
         } catch (\Exception $e) {
             return false;
         }
@@ -42,8 +66,6 @@ abstract class VueEntity implements VueEntityInterface
         if(!($annotation instanceof VueRenderProperty)) {
             return null;
         }
-
-        return null;
 
         if($value === null) {
             $get = 'get' .  strtoupper($property);
@@ -68,15 +90,19 @@ abstract class VueEntity implements VueEntityInterface
         }
 
         $dp = $annotation->dp;
-
         if ($dp !== null && is_int($dp) && (is_int($value) || is_float($value))) {
             $value = number_format($value, $dp, '.', '');
         }
 
-        $dpTrim = $annotation->dpTrim;
 
+        $dpTrim = $annotation->dpTrim;
         if(is_string($value) && is_bool($dpTrim) && $dpTrim) {
             $value = (string)($value + 0);
+        }
+
+        $suffix = $annotation->suffix;
+        if(is_string($value) && is_string($suffix)) {
+            $value .= $suffix;
         }
 
         if ($value === null) {

@@ -28,4 +28,9 @@ class VueRenderProperty extends Annotation
      * @var boolean
      */
     public $dpTrim;
+
+    /**
+     * @var string
+     */
+    public $suffix;
 }
