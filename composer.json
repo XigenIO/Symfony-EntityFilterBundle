@@ -9,7 +9,8 @@
     }],
     "require" : {
         "php": "^7.3",
-        "symfony/framework-bundle": "~4"
+        "symfony/framework-bundle": "~4",
+        "doctrine/annotations": "^1.6"
     },
     "autoload" : {
         "psr-4" : {
