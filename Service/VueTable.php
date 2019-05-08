@@ -37,6 +37,27 @@ class VueTable
         return $this;
     }
 
+    public function loadEntityById($id)
+    {
+        $entity = $this->getRepository()->find($id);
+        if (null === $entity) {
+            return null;
+        }
+
+        $data = [];
+        $reflection = new \ReflectionClass($this->entityClass);
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PRIVATE) as $prop) {
+            $name = $prop->getName();
+            $get = 'get' .  ucfirst($name);
+            if (method_exists($entity, $get)) {
+                $data[$name] = $entity->$get();
+            }
+
+        }
+
+        return $data;
+    }
+
     public function getEntites($attributes): ?array
     {
         if (false === $this->entityExists()) {

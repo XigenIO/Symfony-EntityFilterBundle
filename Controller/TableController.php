@@ -47,4 +47,16 @@ class TableController extends Controller
 
         return $this->json($values);
     }
+
+    /**
+     * @Route("/table/load-entity/{entity}/{id}", name="VueTable_loadEntity")
+     */
+    public function loadEntity($entity, $id)
+    {
+        $entity = $this->table->setEntity($entity)
+            ->loadEntityById($id)
+        ;
+
+        return $this->json($entity);
+    }
 }
