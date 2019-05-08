@@ -87,6 +87,9 @@ abstract class VueEntity implements VueEntityInterface
 
                 $value = $this->secondsToHours($value);
                 break;
+            case 'ARRAY_COUNT':
+                $value = count($value->toArray());
+                break;
         }
 
         $dp = $annotation->dp;
