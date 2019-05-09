@@ -42,6 +42,44 @@ class VueForm
         $this->fields = new ArrayCollection;
     }
 
+    public function getEntityClass($entity)
+    {
+        $entity = ucwords($entity);
+        $entityClass = "AppBundle\\Entity\\{$entity}";
+
+        // Added backwords compatibility with old Symfony namespacing
+        if (\Symfony\Component\HttpKernel\Kernel::MAJOR_VERSION < 4) {
+            $entityClass = "App\\Entity\\{$entity}";
+        }
+
+        return $entityClass;
+    }
+
+    public function saveEntity($entity, Request $request, $id = null)
+    {
+        $entityClass = $this->getEntityClass($entity);
+        $repo = $this->em->getRepository($entityClass);
+
+        $entity = new $entityClass();
+        if (null !== $id) {
+            $entity = $repo->find($id);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        foreach ($payload as $key => $value) {
+            if ('id' === $key) {
+                continue;
+            }
+            $set = 'set' .  ucfirst($key);
+            $value = $entity->$set($value);
+        }
+
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        return true;
+    }
+
     public function getForm($name)
     {
         $this->setName($name);

@@ -183,6 +183,10 @@ class VueTable
         return $values;
     }
 
+    private function orderBySortKey($a, $b)
+    {
+        return strcmp($a[self::$sortColoumn], $b[self::$sortColoumn]);
+    }
 
     private function entityExists(): bool
     {
