@@ -19,6 +19,12 @@ class VueTable
 
     private $entityClass;
 
+    /**
+     * Used to store the first column in the table
+     * @var string
+     */
+    private static $sortColoumn;
+
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
@@ -94,6 +100,10 @@ class VueTable
             $data['_html_'] = $html;
             $entites[] = $data;
         }
+
+        // Sort the array by first column alphabetically
+        self::$sortColoumn = $attributes[0];
+        usort($entites, [$this, 'orderBySortKey']);
 
         return $entites;
     }
