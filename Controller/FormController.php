@@ -47,4 +47,14 @@ class FormController extends Controller
 
         return $this->json(['success' => true]);
     }
+
+    /**
+     * @Route("/form/delete/{entity}/{id}", requirements={"id"="\d+"}, methods={"DELETE"}, name="VueForm_delete")
+     */
+    public function delete($entity, $id, Request $request)
+    {
+        $delete = $this->form->deleteEntity($entity, $id);
+
+        return $this->json(['success' => $delete]);
+    }
 }

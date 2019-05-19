@@ -80,6 +80,19 @@ class VueForm
         return true;
     }
 
+    public function deleteEntity($entity, $id)
+    {
+        $entityClass = $this->getEntityClass($entity);
+        $repo = $this->em->getRepository($entityClass);
+
+        $entity = $repo->find($id);
+
+        $this->em->remove($entity);
+        $this->em->flush();
+
+        return true;
+    }
+
     public function getForm($name)
     {
         $this->setName($name);

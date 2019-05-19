@@ -3,8 +3,12 @@
 namespace Xigen\Bundle\VueBundle\Service;
 
 use Xigen\Bundle\VueBundle\VueEntityInterface;
-
-use Doctrine\ORM\{EntityManagerInterface, Query, Query\QueryException};
+use Doctrine\ORM\{
+    EntityManagerInterface,
+    PersistentCollection,
+    Query,
+    Query\QueryException
+};
 
 class VueTable
 {
@@ -56,9 +60,20 @@ class VueTable
             $name = $prop->getName();
             $get = 'get' .  ucfirst($name);
             if (method_exists($entity, $get)) {
-                $data[$name] = $entity->$get();
-            }
+                $value = $entity->$get();
+                if ($value instanceof PersistentCollection) {
+                    $array = $value->toArray();
+                    $value = [];
+                    foreach ($array as $row) {
+                        $value[] = $row->__toVue();
+                    }
+                }
+                if ($value instanceof \DateTime) {
+                    $value = $value->format(self::TIME_FORMAT);
+                }
 
+                $data[$name] = $value;
+            }
         }
 
         return $data;
