@@ -8,11 +8,11 @@ use Xigen\Bundle\VueBundle\Annotations\VueRenderProperty;
 
 abstract class VueEntity implements VueEntityInterface
 {
-    private $cache = false;
+    private $cache;
 
     private function getCache()
     {
-        if(!$this->cache) {
+        if (null === $this->cache) {
             $this->cache = new FilesystemCache();
         }
 
@@ -59,17 +59,46 @@ abstract class VueEntity implements VueEntityInterface
         }
     }
 
+    private function getTransformer(VueRenderProperty $annotation)
+    {
+        $class = $annotation->transformer;
+        if (class_exists("\Xigen\Bundle\VueBundle\PropertyTransformer\\${class}")) {
+            $class = "\Xigen\Bundle\VueBundle\PropertyTransformer\\${class}";
+        }
+
+        if (class_exists("\AppBundle\PropertyTransformer\\${class}")) {
+            $class = "\AppBundle\PropertyTransformer\\${class}";
+        }
+
+        return new $class();
+    }
+
+
+    private function getValueFromTransformer(VueRenderProperty $annotation, $value = null)
+    {
+        $transformer = $this->getTransformer($annotation);
+
+        return $transformer->transform($value);
+    }
+
     public function __vueProperty($property, $value = null)
     {
         $annotation = $this->getAnnotation($property, VueRenderProperty::class);
-
-        if(!($annotation instanceof VueRenderProperty)) {
+        if (!($annotation instanceof VueRenderProperty)) {
             return null;
         }
 
-        if($value === null) {
+        // Get the value from the entity
+        if ($value === null) {
             $get = 'get' .  strtoupper($property);
             $value = $this->$get();
+        }
+
+        // Using a transformer is the quickest
+        if ('String' !== $annotation->transformer) {
+            $value = $this->getValueFromTransformer($annotation, $value);
+
+            return $value;
         }
 
         switch ($annotation->type) {
@@ -97,14 +126,13 @@ abstract class VueEntity implements VueEntityInterface
             $value = number_format($value, $dp, '.', '');
         }
 
-
         $dpTrim = $annotation->dpTrim;
-        if(is_string($value) && is_bool($dpTrim) && $dpTrim) {
-            $value = (string)($value + 0);
+        if (is_string($value) && is_bool($dpTrim) && $dpTrim) {
+            $value = (string) ($value + 0);
         }
 
         $suffix = $annotation->suffix;
-        if(is_string($value) && is_string($suffix)) {
+        if (is_string($value) && is_string($suffix)) {
             $value .= $suffix;
         }
 

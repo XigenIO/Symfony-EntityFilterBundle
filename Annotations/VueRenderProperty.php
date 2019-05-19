@@ -15,9 +15,11 @@ class VueRenderProperty extends Annotation
 {
     /**
      * @required
-     * @Enum({"SECONDS_TO_TIME", "SECONDS_TO_HOURS"})
+     * @Enum({"TRANSFORMER", "SECONDS_TO_TIME", "SECONDS_TO_HOURS"})
      */
-    public $type;
+    public $type = "TRANSFORMER";
+
+    public $transformer = "String";
 
     /**
      * @var integer
