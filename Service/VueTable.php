@@ -164,7 +164,7 @@ class VueTable
                     }
                 }
 
-                $values[$value] = $value;
+                $values[$value] = strip_tags($value);
             }
 
         } catch (QueryException $e) {
@@ -188,7 +188,7 @@ class VueTable
                     }
                 }
 
-                $values[] = $value;
+                $values[] = strip_tags($value);
             }
         }
 
